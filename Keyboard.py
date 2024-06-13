@@ -1,5 +1,7 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
+import ttkbootstrap as tb
+from ttkbootstrap.constants import *
 import pandas as pd
 from collections import deque
 
@@ -49,10 +51,7 @@ def find_available_options(keyboards_df, connection_type, case_material, switch_
     return available_options
 
 def get_keyboard_recommendation(price_range, connection_type, case_material, switch_type):
-    # Membaca data keyboard dari file CSV menggunakan pandas
     keyboards_df = pd.read_csv('Keyboard.csv')
-
-    # Mencari rentang harga tersedia untuk preferensi pengguna
     available_options = find_available_options(keyboards_df, connection_type, case_material, switch_type)
 
     if len(available_options) == 0:
@@ -61,13 +60,9 @@ def get_keyboard_recommendation(price_range, connection_type, case_material, swi
         available_ranges = "\n".join([f"{option[0]} - {option[1]}" for option in available_options])
         return f"Tidak ada keyboard yang sesuai dengan preferensi Anda di rentang harga {price_range}. Silakan coba rentang harga lain yang tersedia:\n{available_ranges}"
 
-    # Membuat daftar node awal dari data keyboard
     start_nodes = [Node(row) for _, row in keyboards_df.iterrows()]
-
-    # Mencari rekomendasi keyboard menggunakan BFS
     recommended_node = bfs(start_nodes, price_range, connection_type, case_material, switch_type)
 
-    # Menampilkan rekomendasi keyboard
     if recommended_node:
         return f"Rekomendasi keyboard untuk Anda:\n{recommended_node}"
     else:
@@ -98,35 +93,47 @@ def get_price_range():
     else:
         return (1000000, float('inf'))
 
-# Membuat GUI dengan tkinter
-root = tk.Tk()
+# Membuat GUI dengan ttkbootstrap
+root = tb.Window(themename="superhero")
 root.title("Sistem Rekomendasi Keyboard")
+root.geometry("1024x768")  # Mengatur rasio 4:3
+root.resizable(False, False)
 
-tk.Label(root, text="Rentang Harga").grid(row=0, column=0, pady=5)
+frame = tb.Frame(root, padding="20")
+frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)  # Menempatkan frame di tengah
+
+title_label = tb.Label(frame, text="Sistem Rekomendasi Keyboard", font=("Arial", 24, "bold"))
+title_label.grid(row=0, column=0, columnspan=2, pady=20)
+
+tb.Label(frame, text="Rentang Harga", font=("Arial", 16)).grid(row=1, column=0, pady=10, sticky=tk.E)
 price_var = tk.StringVar()
 price_options = ["Di bawah 400.000", "Di bawah 500.000", "Di bawah 700.000", "Di bawah 1.000.000", "Di atas 1.000.000"]
-price_menu = ttk.Combobox(root, textvariable=price_var, values=price_options)
-price_menu.grid(row=0, column=1, pady=5)
+price_menu = tb.Combobox(frame, textvariable=price_var, values=price_options, state="readonly", font=("Arial", 14))
+price_menu.grid(row=1, column=1, pady=10, padx=10, sticky=tk.W)
 
-tk.Label(root, text="Jenis Koneksi").grid(row=1, column=0, pady=5)
+tb.Label(frame, text="Jenis Koneksi", font=("Arial", 16)).grid(row=2, column=0, pady=10, sticky=tk.E)
 connection_var = tk.StringVar()
 connection_options = ["Wired", "Wireless"]
-connection_menu = ttk.Combobox(root, textvariable=connection_var, values=connection_options)
-connection_menu.grid(row=1, column=1, pady=5)
+connection_menu = tb.Combobox(frame, textvariable=connection_var, values=connection_options, state="readonly", font=("Arial", 14))
+connection_menu.grid(row=2, column=1, pady=10, padx=10, sticky=tk.W)
 
-tk.Label(root, text="Material Case").grid(row=2, column=0, pady=5)
+tb.Label(frame, text="Material Case", font=("Arial", 16)).grid(row=3, column=0, pady=10, sticky=tk.E)
 case_var = tk.StringVar()
 case_options = ["plastic", "aluminium"]
-case_menu = ttk.Combobox(root, textvariable=case_var, values=case_options)
-case_menu.grid(row=2, column=1, pady=5)
+case_menu = tb.Combobox(frame, textvariable=case_var, values=case_options, state="readonly", font=("Arial", 14))
+case_menu.grid(row=3, column=1, pady=10, padx=10, sticky=tk.W)
 
-tk.Label(root, text="Jenis Switch").grid(row=3, column=0, pady=5)
+tb.Label(frame, text="Jenis Switch", font=("Arial", 16)).grid(row=4, column=0, pady=10, sticky=tk.E)
 switch_var = tk.StringVar()
 switch_options = ["linear", "tactile", "clicky"]
-switch_menu = ttk.Combobox(root, textvariable=switch_var, values=switch_options)
-switch_menu.grid(row=3, column=1, pady=5)
+switch_menu = tb.Combobox(frame, textvariable=switch_var, values=switch_options, state="readonly", font=("Arial", 14))
+switch_menu.grid(row=4, column=1, pady=10, padx=10, sticky=tk.W)
 
-submit_button = tk.Button(root, text="Dapatkan Rekomendasi", command=on_submit)
-submit_button.grid(row=4, column=0, columnspan=2, pady=10)
+# Menggunakan Style untuk mengatur font pada Button
+style = tb.Style()
+style.configure('TButton', font=('Arial', 16))
+
+submit_button = tb.Button(frame, text="Dapatkan Rekomendasi", command=on_submit, bootstyle=SUCCESS, style='TButton')
+submit_button.grid(row=5, column=0, columnspan=2, pady=20)
 
 root.mainloop()
